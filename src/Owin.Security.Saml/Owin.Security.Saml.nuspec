@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
 <package>
   <metadata>
-    <id>$id$</id>
-    <version>$version$</version>
+    <id>QX-Owin.Security.Saml</id>
+    <version>0.9.1.0</version>
     <title>QX-Owin.Security.Saml</title>
     <authors>a@qx.zone</authors>
     <owners>a@qx.zone</owners>
@@ -12,8 +12,12 @@
     <copyright>Copyright 2016</copyright>
     <tags>qx owin saml2 security</tags>
     <dependencies>
+      <dependency id="Microsoft.IdentityModel.Protocol.Extensions" version="1.0.1" />
       <dependency id="Microsoft.Owin.Security" version="3.0.0" />
-      <dependency id="SAML2.Core" version="2.0.0" />
     </dependencies>
   </metadata>
+  <files>
+    <file src="Owin.Security.Saml.dll" target="lib\net45" />
+    <file src="SAML2.Core.dll" target="lib\net45" />
+  </files>
 </package>
