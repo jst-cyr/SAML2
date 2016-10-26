@@ -1,19 +1,15 @@
-﻿<?xml version="1.0"?>
-<package >
+<?xml version="1.0"?>
+<package>
   <metadata>
     <id>$id$</id>
     <version>$version$</version>
-    <title>$title$</title>
-    <authors>$author$</authors>
-    <owners>$author$</owners>
-    <licenseUrl>https://github.com/elerch/SAML2/blob/master/LICENSE</licenseUrl>
-    <projectUrl>https://github.com/elerch/SAML2</projectUrl>
-    <description>$description$</description>
-    <releaseNotes>Working SP-Initiated requests against testshib.org (redirect binding)</releaseNotes>
-    <copyright>Copyright 2015</copyright>
-    <tags>SAML2 Owin library</tags>
-    <dependencies>
-      <dependency id="Saml2.Core" version="0.9.0.0" />
-    </dependencies>
+    <title>QX-Owin.Security.Saml</title>
+    <authors>a@qx.zone</authors>
+    <owners>a@qx.zone</owners>
+    <projectUrl>https://github.com/alexrster/SAML2</projectUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>QX Owin.Security.SAML</description>
+    <copyright>Copyright 2016</copyright>
+    <tags>qx owin saml2 security</tags>
   </metadata>
 </package>

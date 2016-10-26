@@ -73,6 +73,7 @@
     <Compile Include="SelectSaml20IDP.cs" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="Owin.Security.Saml.nuspec" />
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
