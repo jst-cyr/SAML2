@@ -73,7 +73,9 @@
     <Compile Include="SelectSaml20IDP.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Owin.Security.Saml.nuspec" />
+    <None Include="Owin.Security.Saml.nuspec">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>

@@ -11,5 +11,9 @@
     <description>QX Owin.Security.SAML</description>
     <copyright>Copyright 2016</copyright>
     <tags>qx owin saml2 security</tags>
+    <dependencies>
+      <dependency id="Microsoft.Owin.Security" version="3.0.0" />
+      <dependency id="SAML2.Core" version="2.0.0" />
+    </dependencies>
   </metadata>
 </package>
