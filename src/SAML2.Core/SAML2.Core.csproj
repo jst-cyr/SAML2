@@ -151,6 +151,7 @@
     <Compile Include="Schema\Core\SubjectLocality.cs" />
     <Compile Include="Schema\Metadata\AdditionalMetadataLocation.cs" />
     <Compile Include="Schema\Metadata\AffiliationDescriptor.cs" />
+    <Compile Include="Schema\Metadata\ApplicationServiceTypeDescriptor.cs" />
     <Compile Include="Schema\Metadata\AttributeAuthorityDescriptor.cs" />
     <Compile Include="Schema\Metadata\AttributeConsumingService.cs" />
     <Compile Include="Schema\Metadata\AuthnAuthorityDescriptor.cs" />
