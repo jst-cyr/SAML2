@@ -1,3 +1,4 @@
+using System;
 using System.IO;
 using System.Xml;
 using System.Xml.Serialization;
@@ -57,9 +58,10 @@ namespace SAML2.Utils
         /// <typeparam name="T">The items type</typeparam>
         /// <param name="item">The item to serialize.</param>
         /// <param name="stream">The stream to serialize to.</param>
-        public static void Serialize<T>(T item, Stream stream)
+        /// <param name="additionalTypes">Additional types</param>
+        public static void Serialize<T>(T item, Stream stream, Type[] additionalTypes = null)
         {
-            var serializer = new XmlSerializer(typeof(T));
+            var serializer = new XmlSerializer(typeof(T), additionalTypes);
             serializer.Serialize(stream, item, XmlNamespaces);
             stream.Flush();
         }
@@ -69,11 +71,12 @@ namespace SAML2.Utils
         /// </summary>
         /// <typeparam name="T">The items type</typeparam>
         /// <param name="item">The item.</param>
+        /// <param name="additionalTypes">Additional types</param>
         /// <returns>An XmlDocument containing the serialized form of the item</returns>
-        public static XmlDocument Serialize<T>(T item)
+        public static XmlDocument Serialize<T>(T item, Type[] additionalTypes = null)
         {
             var stream = new MemoryStream();
-            Serialize(item, stream);
+            Serialize(item, stream, additionalTypes);
 
             // create the XmlDocument to return
             var doc = new XmlDocument();
@@ -90,11 +93,12 @@ namespace SAML2.Utils
         /// </summary>
         /// <typeparam name="T">The type of object to serialize.</typeparam>
         /// <param name="item">The item.</param>
+        /// <param name="additionalTypes">Additional types</param>
         /// <returns>The serialized string.</returns>
-        public static string SerializeToXmlString<T>(T item)
+        public static string SerializeToXmlString<T>(T item, Type[] additionalTypes = null)
         {
             var stream = new MemoryStream();
-            Serialize(item, stream);
+            Serialize(item, stream, additionalTypes);
 
             var reader = new StreamReader(stream);
             stream.Seek(0, SeekOrigin.Begin);
