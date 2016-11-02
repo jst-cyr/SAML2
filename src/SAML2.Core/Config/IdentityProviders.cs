@@ -79,11 +79,11 @@ namespace SAML2.Config
                 TryAddByMetadata(file); // ignore errors
             }
         }
-        public bool TryAddByMetadata(string file)
+        public bool TryAddByMetadata(string file, Action<IdentityProvider> configAction = null)
         {
             try {
                 var metadataDoc = new Saml20MetadataDocument(file, GetEncodings());
-                AdjustIdpListWithNewMetadata(metadataDoc);
+                AdjustIdpListWithNewMetadata(metadataDoc, configAction);
                 return true;
             }
             catch (Exception) {
@@ -91,7 +91,7 @@ namespace SAML2.Config
             }
         }
 
-        private void AdjustIdpListWithNewMetadata(Saml20MetadataDocument metadataDoc)
+        private void AdjustIdpListWithNewMetadata(Saml20MetadataDocument metadataDoc, Action<IdentityProvider> configAction = null)
         {
             var endp = this.FirstOrDefault(x => x.Id == metadataDoc.EntityId);
             if (endp == null) {
@@ -102,6 +102,8 @@ namespace SAML2.Config
 
             endp.Id = endp.Name = metadataDoc.EntityId;
             endp.Metadata = metadataDoc;
+
+            configAction?.Invoke(endp);
         }
 
 
