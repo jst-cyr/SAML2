@@ -140,7 +140,7 @@ namespace SAML2.Utils
             if (keyInfoClause is KeyInfoX509Data)
             {
                 var cert = GetCertificateFromKeyInfo((KeyInfoX509Data)keyInfoClause);
-                return cert != null ? cert.PublicKey.Key : null;
+                return cert?.PublicKey.Key;
             }
             
             if (keyInfoClause is DSAKeyValue)

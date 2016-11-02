@@ -15,6 +15,7 @@ using System.Security.Cryptography.X509Certificates;
 using System.Security.Cryptography.Xml;
 using System.Text;
 using System.Xml;
+using SAML2.Schema.XmlDSig;
 
 namespace SAML2.Protocol
 {
@@ -44,16 +45,21 @@ namespace SAML2.Protocol
                 throw new ArgumentNullException("keys");
             }
 
-            foreach (var clause in keys.SelectMany(k => k.KeyInfo.Items.AsEnumerable().Cast<KeyInfoClause>())) {
-                // Check certificate specifications
-                if (clause is KeyInfoX509Data) {
-                    var cert = XmlSignatureUtils.GetCertificateFromKeyInfo((KeyInfoX509Data)clause);
-                    if (!CertificateSatisfiesSpecifications(identityProvider, cert)) {
+            foreach (var item in keys.SelectMany(k => k.KeyInfo.Items))
+            {
+                var clause = item as KeyInfoClause;
+
+                var x509Data = clause as KeyInfoX509Data ?? (item as KeyInfoClause<KeyInfoX509Data>)?.GetKeyInfoClause();
+                if (x509Data != null)
+                {
+                    var cert = XmlSignatureUtils.GetCertificateFromKeyInfo(x509Data);
+                    if (!CertificateSatisfiesSpecifications(identityProvider, cert))
+                    {
                         continue;
                     }
                 }
 
-                var key = XmlSignatureUtils.ExtractKey(clause);
+                var key = XmlSignatureUtils.ExtractKey(x509Data ?? clause);
                 yield return key;
             }
         }

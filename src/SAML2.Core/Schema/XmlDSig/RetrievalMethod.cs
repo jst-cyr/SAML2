@@ -26,7 +26,7 @@ namespace SAML2.Schema.XmlDSig
     [Serializable]
     [XmlType(Namespace = Saml20Constants.Xmldsig)]
     [XmlRoot(ElementName, Namespace = Saml20Constants.Xmldsig, IsNullable = false)]
-    public class RetrievalMethod
+    public class RetrievalMethod : KeyInfoClause<System.Security.Cryptography.Xml.KeyInfoRetrievalMethod>
     {
         /// <summary>
         /// The XML Element name of this class

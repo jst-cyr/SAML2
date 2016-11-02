@@ -220,7 +220,7 @@
     <Compile Include="Schema\XmlDSig\CanonicalizationMethod.cs" />
     <Compile Include="Schema\XmlDSig\DigestMethod.cs" />
     <Compile Include="Schema\XmlDSig\DsaKeyValue.cs" />
-    <Compile Include="Schema\XmlDSig\KeyInfoExtenstions.cs" />
+    <Compile Include="Schema\XmlDSig\KeyInfoClause.cs" />
     <Compile Include="Schema\XmlDSig\KeyInfoItemType.cs" />
     <Compile Include="Schema\XmlDSig\KeyInfo.cs" />
     <Compile Include="Schema\XmlDSig\KeyValue.cs" />
