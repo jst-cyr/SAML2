@@ -1,5 +1,7 @@
 using System;
+using System.Xml;
 using System.Xml.Serialization;
+using SAML2.Utils;
 
 namespace SAML2.Schema.XmlDSig
 {
@@ -70,5 +72,15 @@ namespace SAML2.Schema.XmlDSig
         public X509ItemType[] ItemsElementName { get; set; }
 
         #endregion
+
+        /// <summary>
+        /// An implicit conversion between our Xml Serialization class, and the .NET framework's built-in version of KeyInfo.
+        /// </summary>
+        /// <param name="ki">The key info.</param>
+        /// <returns>The result of the conversion.</returns>
+        public static explicit operator System.Security.Cryptography.Xml.KeyInfoClause(X509Data ki)
+        {
+            return ki.ToKeyInfoClause<System.Security.Cryptography.Xml.KeyInfoX509Data>();
+        }
     }
 }

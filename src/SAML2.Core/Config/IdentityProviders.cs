@@ -50,7 +50,7 @@ namespace SAML2.Config
         /// </summary>
         public string SelectionUrl { get; set; }
 
-        public void AddByMetadataUrl(Uri url)
+        public void AddByMetadataUrl(Uri url, Action<IdentityProvider> configAction = null)
         {
             var request = System.Net.WebRequest.Create(url);
             // It may be more efficient to pass the stream directly, but
@@ -64,11 +64,11 @@ namespace SAML2.Config
                 ms.Seek(0, SeekOrigin.Begin); // Rewind memorystream back to the beginning
                 // We want to allow exceptions to bubble up in this case
                 var metadataDoc = new Saml20MetadataDocument(ms, GetEncodings());
-                AdjustIdpListWithNewMetadata(metadataDoc);
+                AdjustIdpListWithNewMetadata(metadataDoc, configAction);
             }
         }
 
-        public void AddByMetadataDirectory(string path)
+        public void AddByMetadataDirectory(string path, Action<IdentityProvider> configAction = null)
         {
             AddByMetadata(Directory.GetFiles(path));
         }
