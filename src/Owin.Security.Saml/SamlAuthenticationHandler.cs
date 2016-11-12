@@ -187,7 +187,7 @@ namespace Owin.Security.Saml
         protected override async Task<AuthenticationTicket> AuthenticateCoreAsync()
         {
             // Allow login to be constrained to a specific path.
-            if (Options.LoginPath != Request.Path.Value) {
+            if (!Request.Uri.AbsolutePath.Equals(Options.LoginPath, StringComparison.InvariantCultureIgnoreCase)) {
                 return null;
             }
 
