@@ -1,40 +1,38 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Collections.Specialized;
+using System.IO;
+using System.Linq;
+using System.Runtime.ExceptionServices;
 using System.Threading.Tasks;
 using Microsoft.Owin;
+using Microsoft.Owin.Security;
+using Microsoft.Owin.Security.Notifications;
+using SAML2;
+using SAML2.Bindings;
 using SAML2.Config;
 using SAML2.Logging;
-using SAML2.Bindings;
-using SAML2;
-using System.IO;
-using SAML2.Utils;
 using SAML2.Protocol;
-using System.Collections.Generic;
-using Owin.Security.Saml;
-using System.Collections.Specialized;
-using System.Runtime.ExceptionServices;
-using Microsoft.Owin.Security.Notifications;
-using Microsoft.Owin.Security;
-using System.Linq;
+using SAML2.Utils;
 
-namespace Owin
+namespace Owin.Security.Saml
 {
     internal class SamlLoginHandler
     {
-        /// <summary>
-        /// Logger instance.
-        /// </summary>
+        private const string AssertionKey = "saml2:assertion";
+
         private static readonly IInternalLogger Logger = LoggerProvider.LoggerFor(typeof(SamlLoginHandler));
 
-        private Saml2Configuration configuration;
-        private readonly Func<string, object> getFromCache;
-        private readonly IDictionary<string, object> session;
-        private readonly Action<string, object, DateTime> setInCache;
+        private readonly Saml2Configuration _configuration;
+        private readonly Func<string, object> _getFromCache;
+        private readonly IDictionary<string, object> _session;
+        private readonly Action<string, object, DateTime> _setInCache;
+        private readonly SamlAuthenticationOptions _options;
 
         /// <summary>
         /// Key used to save temporary session id
         /// </summary>
         public const string IdpTempSessionKey = "TempIDPId";
-
 
         /// <summary>
         /// Key used to override <c>ForceAuthn</c> setting
@@ -45,24 +43,23 @@ namespace Owin
         /// Key used to override IsPassive setting
         /// </summary>
         public const string IdpIsPassive = "IDPIsPassive";
-        private readonly SamlAuthenticationOptions options;
-
 
         /// <summary>
         /// Constructor for LoginHandler
         /// </summary>
-        /// <param name="configuration">SamlConfiguration</param>
-        /// <param name="getFromCache">May be null unless doing artifact binding, this function will be called for artifact resolution</param>
         public SamlLoginHandler(SamlAuthenticationOptions options)
         {
-            if (options == null) throw new ArgumentNullException("options");
-            this.options = options;
-            configuration = options.Configuration;
-            getFromCache = options.GetFromCache;
-            setInCache = options.SetInCache;
-            session = options.Session;
-        }
+            if (options == null)
+            {
+                throw new ArgumentNullException(nameof(options));
+            }
 
+            _options = options;
+            _configuration = options.Configuration;
+            _getFromCache = options.GetFromCache;
+            _setInCache = options.SetInCache;
+            _session = options.Session;
+        }
 
         /// <summary>
         /// Invokes the login procedure (2nd leg of SP-Initiated login). Analagous to Saml20SignonHandler from ASP.Net DLL
@@ -72,81 +69,82 @@ namespace Owin
         public async Task<AuthenticationTicket> Invoke(IOwinContext context)
         {
             Logger.Debug(TraceMessages.SignOnHandlerCalled);
-            ExceptionDispatchInfo authFailedEx = null;
-            try {
-                var messageReceivedNotification = new MessageReceivedNotification<SamlMessage, SamlAuthenticationOptions>(context, options)
+
+            ExceptionDispatchInfo exceptionDispatchInfo;
+            try
+            {
+                if (!await _options.Notifications.MessageReceived.NotifyAndVerify(new MessageReceivedNotification<SamlMessage, SamlAuthenticationOptions>(context, _options)
                 {
-                    ProtocolMessage = new SamlMessage(context, configuration, null)
-                };
-                await options.Notifications.MessageReceived(messageReceivedNotification);
-                if (messageReceivedNotification.HandledResponse) {
-                    return null; // GetHandledResponseTicket()
-                }
-                if (messageReceivedNotification.Skipped) {
+                    ProtocolMessage = new SamlMessage(context, _configuration, null)
+                }))
+                {
                     return null;
                 }
+
                 var requestParams = await HandleResponse(context);
-                var assertion = context.Get<Saml20Assertion>("Saml2:assertion");
-                var securityTokenReceivedNotification = new SecurityTokenReceivedNotification<SamlMessage, SamlAuthenticationOptions>(context, options)
+                var assertion = context.Get<Saml20Assertion>(AssertionKey);
+
+                if (!await _options.Notifications.SecurityTokenReceived.NotifyAndVerify(new SecurityTokenReceivedNotification<SamlMessage, SamlAuthenticationOptions>(context, _options)
                 {
-                    ProtocolMessage = new SamlMessage(context, configuration, assertion)
-                };
-                await options.Notifications.SecurityTokenReceived(securityTokenReceivedNotification);
-                if (securityTokenReceivedNotification.HandledResponse) {
-                    return null; // GetHandledResponseTicket();
-                }
-                if (securityTokenReceivedNotification.Skipped) {
+                    ProtocolMessage = new SamlMessage(context, _configuration, assertion)
+                }))
+                {
                     return null;
                 }
 
                 var ticket = await GetAuthenticationTicket(context, requestParams);
-
-                var securityTokenValidatedNotification = new SecurityTokenValidatedNotification<SamlMessage, SamlAuthenticationOptions>(context, options)
+                if (!await _options.Notifications.SecurityTokenValidated.NotifyAndVerify(new SecurityTokenValidatedNotification<SamlMessage, SamlAuthenticationOptions>(context, _options)
                 {
                     AuthenticationTicket = ticket,
-                    ProtocolMessage = new SamlMessage(context, configuration, assertion)
-                };
-
-                await options.Notifications.SecurityTokenValidated(securityTokenValidatedNotification);
-                if (securityTokenValidatedNotification.HandledResponse) {
-                    return null; // GetHandledResponseTicket();
+                    ProtocolMessage = new SamlMessage(context, _configuration, assertion)
+                }))
+                {
+                    return null;
                 }
-                if (securityTokenValidatedNotification.Skipped) {
-                    return null; // null;
-                }
+                
                 // Flow possible changes
-                ticket = securityTokenValidatedNotification.AuthenticationTicket;
+                context.Authentication.AuthenticationResponseGrant = new AuthenticationResponseGrant(ticket.Identity, ticket.Properties);
 
-                context.Authentication.AuthenticationResponseGrant = new AuthenticationResponseGrant(ticket.Identity, ticket.Properties);                
                 return ticket;
             }
-            catch (Exception ex) {
-                authFailedEx = ExceptionDispatchInfo.Capture(ex);
+            catch (Exception ex)
+            {
+                exceptionDispatchInfo = ExceptionDispatchInfo.Capture(ex);
             }
-            if (authFailedEx != null) {
-                Logger.Error("Exception occurred while processing message: " + authFailedEx.SourceException);
-                var message = new SamlMessage(context, configuration, context.Get<Saml20Assertion>("Saml2:assertion"));
-                var authenticationFailedNotification = new AuthenticationFailedNotification<SamlMessage, SamlAuthenticationOptions>(context, options)
+
+            if (exceptionDispatchInfo != null)
+            {
+                Logger.Error("Exception occurred while processing message: " + exceptionDispatchInfo.SourceException);
+
+                if (!await _options.Notifications.AuthenticationFailed.NotifyAndVerify(new AuthenticationFailedNotification<SamlMessage, SamlAuthenticationOptions>(context, _options)
                 {
-                    ProtocolMessage = message,
-                    Exception = authFailedEx.SourceException
-                };
-                await options.Notifications.AuthenticationFailed(authenticationFailedNotification);
-                if (authenticationFailedNotification.HandledResponse) {
-                    return null;//GetHandledResponseTicket();
-                }
-                if (authenticationFailedNotification.Skipped) {
-                    return null; //null
+                    ProtocolMessage = new SamlMessage(context, _configuration, context.Get<Saml20Assertion>(AssertionKey)),
+                    Exception = exceptionDispatchInfo.SourceException
+                }))
+                {
+                    return null;
                 }
 
-                authFailedEx.Throw();
+                exceptionDispatchInfo.Throw();
             }
+
             return null;
+        }
+
+        private async Task HandleNotification<TOptions>(Func<BaseNotification<TOptions>, Task> notifierFunc, BaseNotification<TOptions> notificationOptions)
+        {
+            await notifierFunc(notificationOptions);
+        }
+
+        private async Task HandleNotification<TNotificaton, TOptions>(Func<TNotificaton, Task> notifierFunc, TNotificaton notificationOptions)
+            where TNotificaton : BaseNotification<TOptions>
+        {
+            await HandleNotification((Func<BaseNotification<TOptions>, Task>) notifierFunc, notificationOptions);
         }
 
         private Task<AuthenticationTicket> GetAuthenticationTicket(IOwinContext context, NameValueCollection requestParams)
         {
-            var assertion = context.Get<Saml20Assertion>("Saml2:assertion");
+            var assertion = context.Get<Saml20Assertion>(AssertionKey);
             if (assertion == null)
                 throw new InvalidOperationException("no assertion found with which to create a ticket");
 
@@ -156,52 +154,61 @@ namespace Owin
                 // IssuedUtc = DateTimeOffset.UtcNow,
                 IsPersistent = true,
                 AllowRefresh = true,
-                RedirectUri = options.RedirectAfterLogin
+                RedirectUri = _options.RedirectAfterLogin
             };
 
             var relayState = requestParams["RelayState"];
-            if (relayState != null) {
+            if (relayState != null)
+            {
                 var challengeProperties = new AuthenticationProperties(Compression.DeflateDecompress(relayState).FromDelimitedString().ToDictionary(k => k.Key, v => v.Value));
                 if (challengeProperties.RedirectUri != null) authenticationProperties.RedirectUri = challengeProperties.RedirectUri;
                 foreach (var kvp in challengeProperties.Dictionary.Except(authenticationProperties.Dictionary))
                     authenticationProperties.Dictionary.Add(kvp);
             }
-			return Task.FromResult(new AuthenticationTicket(assertion.ToClaimsIdentity(options.SignInAsAuthenticationType), authenticationProperties));
+            return Task.FromResult(new AuthenticationTicket(assertion.ToClaimsIdentity(_options.SignInAsAuthenticationType), authenticationProperties));
         }
 
         private Task<NameValueCollection> HandleResponse(IOwinContext context)
-        { 
+        {
             Action<Saml20Assertion> loginAction = a => DoSignOn(context, a);
 
             // Some IdP's are known to fail to set an actual value in the SOAPAction header
             // so we just check for the existence of the header field.
-            if (context.Request.Headers.ContainsKey(SoapConstants.SoapAction)) {
+            if (context.Request.Headers.ContainsKey(SoapConstants.SoapAction))
+            {
                 Utility.HandleSoap(
                     GetBuilder(context),
                     context.Request.Body,
-                    configuration,
+                    _configuration,
                     loginAction,
-                    getFromCache,
-                    setInCache,
-                    session);
+                    _getFromCache,
+                    _setInCache,
+                    _session);
                 return Task.FromResult(context.Request.GetRequestParameters().ToNameValueCollection());
             }
 
             var requestParams = context.Request.GetRequestParameters().ToNameValueCollection();
-            if (!string.IsNullOrWhiteSpace(requestParams["SAMLart"])) {
+            if (!string.IsNullOrWhiteSpace(requestParams["SAMLart"]))
+            {
                 HandleArtifact(context);
             }
 
             var samlResponse = requestParams["SamlResponse"];
-            if (!string.IsNullOrWhiteSpace(samlResponse)) {
-                var assertion = Utility.HandleResponse(configuration, samlResponse, session, getFromCache, setInCache);
+            if (!string.IsNullOrWhiteSpace(samlResponse))
+            {
+                var assertion = Utility.HandleResponse(_configuration, samlResponse, _session, _getFromCache, _setInCache);
                 loginAction(assertion);
-            } else {
-                if (configuration.CommonDomainCookie.Enabled && context.Request.Query["r"] == null
-                    && requestParams["cidp"] == null) {
+            }
+            else
+            {
+                if (_configuration.CommonDomainCookie.Enabled && context.Request.Query["r"] == null
+                    && requestParams["cidp"] == null)
+                {
                     Logger.Debug(TraceMessages.CommonDomainCookieRedirectForDiscovery);
-                    context.Response.Redirect(configuration.CommonDomainCookie.LocalReaderEndpoint);
-                } else {
+                    context.Response.Redirect(_configuration.CommonDomainCookie.LocalReaderEndpoint);
+                }
+                else
+                {
                     Logger.WarnFormat(ErrorMessages.UnauthenticatedAccess, context.Request.Uri.OriginalString);
                     throw new InvalidOperationException("Response request recieved without any response data");
                 }
@@ -213,15 +220,15 @@ namespace Owin
         {
             var builder = GetBuilder(context);
             // TODO: Need params version of these!
-            var inputStream = builder.ResolveArtifact(context.Request.Query["SAMLart"], context.Request.Query["relayState"], configuration);
+            var inputStream = builder.ResolveArtifact(context.Request.Query["SAMLart"], context.Request.Query["relayState"], _configuration);
 
-            Utility.HandleSoap(builder, inputStream, configuration, a => DoSignOn(context, a), getFromCache, setInCache, session);
+            Utility.HandleSoap(builder, inputStream, _configuration, a => DoSignOn(context, a), _getFromCache, _setInCache, _session);
         }
 
         private HttpArtifactBindingBuilder GetBuilder(IOwinContext context)
         {
             return new HttpArtifactBindingBuilder(
-                configuration,
+                _configuration,
                 context.Response.Redirect,
                 m => SendResponseMessage(m, context));
         }
@@ -229,10 +236,9 @@ namespace Owin
         private static void SendResponseMessage(string message, IOwinContext context)
         {
             context.Response.ContentType = "text/xml";
-            using (var writer = new StreamWriter(context.Response.Body)) {
+            using (var writer = new StreamWriter(context.Response.Body))
+            {
                 writer.Write(HttpSoapBindingBuilder.WrapInSoapEnvelope(message));
-                writer.Flush();
-                writer.Close();
             }
         }
 
@@ -244,10 +250,9 @@ namespace Owin
         /// <param name="assertion">The assertion.</param>
         private void DoSignOn(IOwinContext context, Saml20Assertion assertion)
         {
-            context.Set("Saml2:assertion", assertion);
+            context.Set(AssertionKey, assertion);
             var subject = assertion.Subject ?? new SAML2.Schema.Core.NameId();
             Logger.DebugFormat(TraceMessages.SignOnProcessed, assertion.SessionIndex, subject.Value, subject.Format);
         }
-
     }
 }

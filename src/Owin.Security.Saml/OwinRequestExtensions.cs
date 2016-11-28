@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.Owin.Security.Notifications;
 
 namespace Owin.Security.Saml
 {
@@ -89,6 +90,18 @@ namespace Owin.Security.Saml
                 value.Set("Microsoft.Owin.Form#collection", form);
             }
             return Task.FromResult(form);
+        }
+
+        public static async Task<bool> NotifyAndVerify<TNotification>(this Func<TNotification, Task> notifierFunc, TNotification notification)
+            where TNotification : BaseNotification<SamlAuthenticationOptions>
+        {
+            await notifierFunc(notification);
+            return VerifyNotificationResponse(notification);
+        }
+
+        public static bool VerifyNotificationResponse<TOptions>(this BaseNotification<TOptions> notification)
+        {
+            return !notification.HandledResponse && !notification.Skipped;
         }
 
         #region Lifted from Katana project internal class. Microsoft.Owin.Infrastructure.OwinHelpers

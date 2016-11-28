@@ -383,7 +383,6 @@ namespace SAML2.Protocol
         /// <summary>
         /// Handle the authentication response from the IDP.
         /// </summary>
-        /// <param name="context">The context.</param>
         public static Saml20Assertion HandleResponse(Saml2Configuration config, string samlResponse, IDictionary<string, object> session, Func<string, object> getFromCache, Action<string, object, DateTime> setInCache)
         {
             var defaultEncoding = Encoding.UTF8;

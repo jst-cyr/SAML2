@@ -23,9 +23,16 @@ namespace Owin.Security.Saml
             GetFromCache = s => memoryCache.Get(s);
             SetInCache = (s, o, d) => memoryCache.Set(s, o, d);
         }
-        public Saml2Configuration Configuration { get; set; }
-        public Func<string, object> GetFromCache { get; set; }
 
+        /// <summary>
+        /// SAML2 Configuration
+        /// </summary>
+        public Saml2Configuration Configuration { get; set; }
+
+        /// <summary>
+        /// Get from
+        /// </summary>
+        public Func<string, object> GetFromCache { get; set; }
 
         /// <summary>
         /// Defines login path for all bindings. Defaults to /saml2/login

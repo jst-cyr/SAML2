@@ -27,10 +27,12 @@ namespace Owin.Security.Saml
         public static IEnumerable<KeyValuePair<string,string>> FromDelimitedString(this string value)
         {
             if (value == null) throw new ArgumentNullException("value");
-            return value.Split('&').Select(kvp => {
-                var split = kvp.Split('=');
-                return new KeyValuePair<string, string>(split[0], Uri.UnescapeDataString(split[1]));
-            });
+            return value.Split('&')
+                .Where(x => !string.IsNullOrWhiteSpace(x))
+                .Select(kvp => {
+                    var split = kvp.Split('=');
+                    return new KeyValuePair<string, string>(split[0], Uri.UnescapeDataString(split[1]));
+                });
         }
     }
 }
