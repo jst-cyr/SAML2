@@ -8,9 +8,10 @@ namespace Owin.Security.Saml
 {
     public class SamlAuthenticationOptions : AuthenticationOptions
     {
-        // TODO: IDisposable...
-        private readonly MemoryCache memoryCache = new MemoryCache("samlCache");
-        public SamlAuthenticationOptions() : base("SAML2") {
+        private readonly MemoryCache _memoryCache = new MemoryCache("samlCache");
+
+        public SamlAuthenticationOptions() : base("SAML2")
+        {
             Description = new AuthenticationDescription
             {
                 AuthenticationType = "SAML2",
@@ -20,8 +21,8 @@ namespace Owin.Security.Saml
             MetadataPath = "/saml2/metadata";
             LoginPath = "/saml2/login";
             LogoutPath = "/saml2/logout";
-            GetFromCache = s => memoryCache.Get(s);
-            SetInCache = (s, o, d) => memoryCache.Set(s, o, d);
+            GetFromCache = s => _memoryCache.Get(s);
+            SetInCache = (s, o, d) => _memoryCache.Set(s, o, d);
         }
 
         /// <summary>

@@ -11,7 +11,7 @@ namespace SAML2.Config
         /// <summary>
         /// Gets the section name.
         /// </summary>
-        public static string Name { get { return "saml2"; } }
+        public static string Name => "saml2";
 
         /// <summary>
         /// Gets or sets the allowed audience uris.
@@ -52,6 +52,11 @@ namespace SAML2.Config
         /// </summary>
         /// <value>The service provider.</value>
         public ServiceProvider ServiceProvider { get; set; }
+
+        /// <summary>
+        /// Path to Folder where all incoming assertions will be logged
+        /// </summary>
+        public string AssertionLogPath { get; set; }
 
         public Saml2Configuration()
         {

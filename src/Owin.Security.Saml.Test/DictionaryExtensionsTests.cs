@@ -1,12 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Owin.Security.Saml.Test
 {
     /// <summary>
-    /// Unit test for <see cref="IDictionaryExtensions"/>
+    /// Unit test for <see cref="DictionaryExtensions"/>
     /// </summary>
     [TestClass]
     public class DictionaryExtensionsTests

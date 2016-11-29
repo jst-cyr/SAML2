@@ -2,7 +2,9 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Text;
 using System.Threading.Tasks;
+using System.Xml;
 using Microsoft.Owin.Logging;
 using Microsoft.Owin.Security.Infrastructure;
 using Microsoft.Owin.Security.Notifications;
@@ -98,7 +100,7 @@ namespace Owin.Security.Saml
             var currentUri = baseUri + Request.Path + Request.QueryString;
 
             // Save the original challenge URI so we can redirect back to it when we're done.
-            AuthenticationProperties properties = challenge.Properties;
+            var properties = challenge.Properties;
             if (string.IsNullOrEmpty(properties.RedirectUri))
             {
                 properties.RedirectUri = currentUri;
@@ -108,7 +110,12 @@ namespace Owin.Security.Saml
                 }
             }
 
-            SamlMessage samlMessage = await GetSamlMessageFromRequestAsync();
+            var samlMessage = await GetSamlMessageFromRequestAsync();
+            if (samlMessage?.Assertion?.XmlAssertion != null && !string.IsNullOrWhiteSpace(Options.Configuration.AssertionLogPath))
+            {
+                var path = Path.Combine(Options.Configuration.AssertionLogPath, $"{Guid.NewGuid():N}.xml");
+                File.WriteAllText(path, samlMessage.Assertion.XmlAssertion.OuterXml);
+            }
 
             var notification = new RedirectToIdentityProviderNotification<SamlMessage, SamlAuthenticationOptions>(Context, Options)
             {
