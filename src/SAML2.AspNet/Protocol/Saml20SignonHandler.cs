@@ -210,6 +210,24 @@ namespace SAML2.Protocol
 
                 context.Response.Write(postBuilder.GetPage());
                 break;
+            case BindingType.PostSimpleSign:
+                Logger.DebugFormat(TraceMessages.AuthnRequestPrepared, identityProvider.Id, Saml20Constants.ProtocolBindings.HttpPostSimpleSign);
+
+                var postSimpleSignBuilder = new HttpPostBindingBuilder(destination);
+
+                // Honor the ForceProtocolBinding and only set this if it's not already set
+                if (string.IsNullOrEmpty(request.ProtocolBinding)) {
+                    request.ProtocolBinding = Saml20Constants.ProtocolBindings.HttpPostSimpleSign;
+                }
+
+                var requestXmlSimpleSign = request.GetXml();
+                XmlSignatureUtils.SignDocument(requestXmlSimpleSign, request.Id, config.ServiceProvider.SigningCertificate);
+                postSimpleSignBuilder.Request = requestXmlSimpleSign.OuterXml;
+
+                Logger.DebugFormat(TraceMessages.AuthnRequestSent, postSimpleSignBuilder.Request);
+
+                context.Response.Write(postSimpleSignBuilder.GetPage());
+                break;
             case BindingType.Artifact:
                 Logger.DebugFormat(TraceMessages.AuthnRequestPrepared, identityProvider.Id, Saml20Constants.ProtocolBindings.HttpArtifact);
 

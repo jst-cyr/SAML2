@@ -492,6 +492,8 @@ namespace SAML2
                     return Saml20Constants.ProtocolBindings.HttpArtifact;
                 case BindingType.Post:
                     return Saml20Constants.ProtocolBindings.HttpPost;
+				case BindingType.PostSimpleSign:
+					return Saml20Constants.ProtocolBindings.HttpPostSimpleSign;
                 case BindingType.Redirect:
                     return Saml20Constants.ProtocolBindings.HttpRedirect;
                 case BindingType.Soap:
@@ -752,7 +754,10 @@ namespace SAML2
                                 case Saml20Constants.ProtocolBindings.HttpPost:
                                     binding = BindingType.Post;
                                     break;
-                                case Saml20Constants.ProtocolBindings.HttpRedirect:
+								case Saml20Constants.ProtocolBindings.HttpPostSimpleSign:
+									binding = BindingType.PostSimpleSign;
+									break;
+								case Saml20Constants.ProtocolBindings.HttpRedirect:
                                     binding = BindingType.Redirect;
                                     break;
                                 case Saml20Constants.ProtocolBindings.HttpArtifact:
@@ -781,7 +786,10 @@ namespace SAML2
                                     case Saml20Constants.ProtocolBindings.HttpPost:
                                         binding = BindingType.Post;
                                         break;
-                                    case Saml20Constants.ProtocolBindings.HttpRedirect:
+									case Saml20Constants.ProtocolBindings.HttpPostSimpleSign:
+										binding = BindingType.PostSimpleSign;
+										break;
+									case Saml20Constants.ProtocolBindings.HttpRedirect:
                                         binding = BindingType.Redirect;
                                         break;
                                     case Saml20Constants.ProtocolBindings.HttpArtifact:
@@ -818,7 +826,10 @@ namespace SAML2
                                 case Saml20Constants.ProtocolBindings.HttpPost:
                                     binding = BindingType.Post;
                                     break;
-                                case Saml20Constants.ProtocolBindings.HttpRedirect:
+								case Saml20Constants.ProtocolBindings.HttpPostSimpleSign:
+									binding = BindingType.PostSimpleSign;
+									break;
+								case Saml20Constants.ProtocolBindings.HttpRedirect:
                                     binding = BindingType.Redirect;
                                     break;
                                 case Saml20Constants.ProtocolBindings.HttpArtifact:
@@ -844,7 +855,10 @@ namespace SAML2
                                     case Saml20Constants.ProtocolBindings.HttpPost:
                                         binding = BindingType.Post;
                                         break;
-                                    case Saml20Constants.ProtocolBindings.HttpRedirect:
+									case Saml20Constants.ProtocolBindings.HttpPostSimpleSign:
+										binding = BindingType.PostSimpleSign;
+										break;
+									case Saml20Constants.ProtocolBindings.HttpRedirect:
                                         binding = BindingType.Redirect;
                                         break;
                                     case Saml20Constants.ProtocolBindings.HttpArtifact:

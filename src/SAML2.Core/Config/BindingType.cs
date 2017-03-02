@@ -18,6 +18,11 @@ namespace SAML2.Config
         /// </summary>
         Post = 1,
 
+		/// <summary>
+		/// POST SimpleSign binding
+		/// </summary>
+		PostSimpleSign = 12,
+
         /// <summary>
         /// Redirect binding
         /// </summary>

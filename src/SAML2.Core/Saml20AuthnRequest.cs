@@ -168,7 +168,10 @@ namespace SAML2
                 case BindingType.Post:
                     result.Request.ProtocolBinding = Saml20Constants.ProtocolBindings.HttpPost;
                     break;
-                case BindingType.Redirect:
+				case BindingType.PostSimpleSign:
+					result.Request.ProtocolBinding = Saml20Constants.ProtocolBindings.HttpPostSimpleSign;
+					break;
+				case BindingType.Redirect:
                     result.Request.ProtocolBinding = Saml20Constants.ProtocolBindings.HttpRedirect;
                     break;
                 case BindingType.Soap:

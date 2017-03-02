@@ -333,7 +333,7 @@ namespace SAML2.Protocol
             }
 
             // Respond using post binding
-            if (destination.Binding == BindingType.Post)
+            if (destination.Binding == BindingType.Post || destination.Binding == BindingType.PostSimpleSign)
             {
                 var builder = new HttpPostBindingBuilder(destination)
                                   {
@@ -382,7 +382,7 @@ namespace SAML2.Protocol
             request.SubjectToLogOut.Format = nameIdFormat;
 
             // Handle POST binding
-            if (destination.Binding == BindingType.Post)
+            if (destination.Binding == BindingType.Post || destination.Binding == BindingType.PostSimpleSign)
             {
                 var builder = new HttpPostBindingBuilder(destination);
                 request.Destination = destination.Url;

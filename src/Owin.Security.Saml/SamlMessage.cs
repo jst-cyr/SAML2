@@ -164,6 +164,7 @@ namespace Owin.Security.Saml
                 var redirectLocation = request.Destination + (request.Destination.Contains("?") ? "&" : "?") + redirectBuilder.ToQuery();
                 return redirectLocation;
             case BindingType.Post:
+			case BindingType.PostSimpleSign:
                 throw new NotImplementedException();
                 //logger.DebugFormat(TraceMessages.AuthnRequestPrepared, identityProvider.Id, Saml20Constants.ProtocolBindings.HttpPost);
 

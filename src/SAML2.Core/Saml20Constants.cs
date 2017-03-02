@@ -111,10 +111,15 @@ namespace SAML2
             /// </summary>
             public const string HttpPost = "urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST";
 
-            /// <summary>
-            /// HTTP Artifact protocol binding
-            /// </summary>
-            public const string HttpArtifact = "urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Artifact";
+			/// <summary>
+			/// HTTP Post SimpleSign binding
+			/// </summary>
+			public const string HttpPostSimpleSign = "urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST-SimpleSign";
+
+			/// <summary>
+			/// HTTP Artifact protocol binding
+			/// </summary>
+			public const string HttpArtifact = "urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Artifact";
 
             /// <summary>
             /// HTTP SOAP  protocol binding
